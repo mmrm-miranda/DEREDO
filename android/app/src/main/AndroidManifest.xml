@@ -2,6 +2,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     
     <application
         android:label="DEREDO"
@@ -35,8 +36,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
         
-        <!-- Google Maps API Key -->
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="${googleMapsApiKey}"/>
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyDpJTasr9TT4KSqh9UuRq1cvGZ_lgOhVec"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'config/env.dart';
+import 'config/gemini_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  try {
-    // Initialize Firebase. Requires flutterfire configure to be run first.
-    await Firebase.initializeApp();
-  } catch (e) {
-    debugPrint("Firebase initialization failed or not configured yet: $e");
-  }
+
+  await dotenv.load(fileName: '.env');
+
+  GeminiService().init();
+
+  debugPrint("Gemini API Key: ${Env.geminiApiKey.isNotEmpty ? 'OK' : 'FALTA'}");
+  debugPrint("Google Maps Key: ${Env.googleMapsApiKey.isNotEmpty ? 'OK' : 'FALTA'}");
 
   runApp(
     const ProviderScope(
@@ -27,7 +29,6 @@ class DeredoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DEREDO',
-      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFFFF6B35), // The color from the architecture
@@ -88,18 +89,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned.fill(
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _center,
-                zoom: 14.0,
-              ),
-              markers: _markers,
-              myLocationEnabled: false, // Set to false until runtime permissions are requested
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _center,
+              zoom: 14.0,
             ),
+            markers: _markers,
+            myLocationEnabled: false, // Set to false until runtime permissions are requested
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
           ),
           // Top Search Bar Mock
           Positioned(
