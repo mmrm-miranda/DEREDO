@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'config/env.dart';
 import 'config/gemini_service.dart';
 import 'screens/chat_screen.dart';
+import 'screens/login/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,7 +46,7 @@ class DeredoApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const MapScreen(),
+      home: const LoginScreen(),
     );
   }
 }
