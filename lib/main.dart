@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'config/env.dart';
 import 'config/gemini_service.dart';
+import 'screens/chat_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -132,10 +133,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Open bottom sheet for category filters
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ChatScreen()),
+          );
         },
         backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(Icons.filter_list, color: Colors.white),
+        child: const Icon(Icons.smart_toy, color: Colors.white),
       ),
     );
   }
