@@ -11,7 +11,7 @@ class GeminiService {
 
   void init() {
     _model = GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       apiKey: Env.geminiApiKey,
       systemInstruction: Content.system(
         'Eres un asistente de la app DEREDO, una plataforma para descubrir negocios locales en Durango, México. '
