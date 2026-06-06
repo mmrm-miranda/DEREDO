@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     
     <application
-        android:label="negocios_locales"
+        android:label="DEREDO"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -35,8 +35,8 @@
             android:name="flutterEmbedding"
             android:value="2" />
         
-        <!-- TODO: Replace YOUR_API_KEY_HERE with your actual Google Maps API Key -->
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="YOUR_API_KEY_HERE"/>
+        <!-- Google Maps API Key -->
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="${googleMapsApiKey}"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

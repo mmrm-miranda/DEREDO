@@ -27,6 +27,7 @@ class DeredoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DEREDO',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFFFF6B35), // The color from the architecture
@@ -87,16 +88,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
-              target: _center,
-              zoom: 14.0,
+          Positioned.fill(
+            child: GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: _center,
+                zoom: 14.0,
+              ),
+              markers: _markers,
+              myLocationEnabled: false, // Set to false until runtime permissions are requested
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
             ),
-            markers: _markers,
-            myLocationEnabled: false, // Set to false until runtime permissions are requested
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
           ),
           // Top Search Bar Mock
           Positioned(
