@@ -13,6 +13,8 @@ dependencies:
   flutter_riverpod: ^3.3.1
   geolocator: ^14.0.2
   google_generative_ai: ^0.4.7
+  http: ^1.2.2
+  googleapis_auth: ^1.6.0
   google_maps_flutter: ^2.17.1
   speech_to_text: ^7.4.0
 
@@ -35,3 +37,4 @@ flutter:
 
   assets:
     - .env
+    - gen-lang-client-0483127667-1062ab4ca253.json

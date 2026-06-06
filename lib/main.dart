@@ -12,7 +12,7 @@ void main() async {
 
   await dotenv.load(fileName: '.env');
 
-  GeminiService().init();
+  await GeminiService().init();
 
   debugPrint("Gemini API Key: ${Env.geminiApiKey.isNotEmpty ? 'OK' : 'FALTA'}");
   debugPrint("Google Maps Key: ${Env.googleMapsApiKey.isNotEmpty ? 'OK' : 'FALTA'}");

@@ -52,3 +52,7 @@ app.*.map.json
 .env.*
 *.json.credentials
 gen-lang-client-*.json
+
+# Database setup files
+schema.sql
+setup_db.bat
