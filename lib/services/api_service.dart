@@ -102,6 +102,16 @@ class ApiService {
     return _parse(res);
   }
 
+  Future<void> publicarNegocio(String negocioId) async {
+    final res = await http.patch(
+      Uri.parse('$_base/negocios/$negocioId/publicar'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception(jsonDecode(res.body)['error'] ?? 'Error al publicar');
+    }
+  }
+
   Map<String, dynamic> _parse(http.Response res) {
     final body = jsonDecode(res.body);
     if (res.statusCode >= 200 && res.statusCode < 300) return body;

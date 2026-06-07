@@ -4,6 +4,8 @@ import '../home/home_screen.dart';
 import '../home/models/feature_item.dart';
 import '../register/register_screen.dart';
 import '../register_business/register_business_screen.dart';
+import '../chat_screen.dart';
+import '../map_screen.dart';
 import 'widgets/login_header.dart';
 import 'widgets/login_form.dart';
 import 'widgets/voice_login_button.dart';
@@ -50,20 +52,29 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => HomeScreen(
+        builder: (ctx) => HomeScreen(
           location: 'Durango, Dgo.',
           features: const [
             FeatureItem(title: 'Mapa local', description: 'Negocios cerca de ti por categoría'),
             FeatureItem(title: 'Rutas de barrio', description: 'Recorre zonas comerciales únicas'),
-            FeatureItem(title: 'Registro por voz', description: 'Registra tu negocio en 2 min'),
+            FeatureItem(title: 'Asistente IA', description: 'Chat con Gemini sobre Durango'),
             FeatureItem(title: 'Productos locales', description: 'Artesanías, mezcal, antojitos'),
           ],
-          onExplore: () {},
-          onFeatureTap: (_) {},
+          onExplore: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MapScreen()),
+          ),
+          onFeatureTap: (item) {
+            if (item.title == 'Mapa local' || item.title == 'Rutas de barrio' || item.title == 'Productos locales') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatScreen()));
+            }
+          },
           onRegisterBusiness: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => RegisterBusinessScreen(
+              builder: (ctx2) => RegisterBusinessScreen(
                 usuarioId: userId,
                 businessTypes: const [
                   'Antojitos duranguenses',
@@ -74,8 +85,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   'Panadería',
                   'Otro',
                 ],
-                onVoiceRegister: () {},
-                onChatAssistant: () {},
+                onVoiceRegister: () => Navigator.push(
+                  ctx2,
+                  MaterialPageRoute(builder: (_) => const ChatScreen()),
+                ),
+                onChatAssistant: () => Navigator.push(
+                  ctx2,
+                  MaterialPageRoute(builder: (_) => const ChatScreen()),
+                ),
               ),
             ),
           ),

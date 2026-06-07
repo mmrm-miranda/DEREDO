@@ -25,7 +25,7 @@ def api(request):
     if request.method == "OPTIONS":
         return ("", 204, {
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE",
             "Access-Control-Allow-Headers": "Content-Type, Authorization",
         })
 
@@ -60,6 +60,10 @@ def api(request):
 
         if path == "/setup" and method == "POST":
             return setup_db(request)
+
+        if path.startswith("/negocios/") and path.endswith("/publicar") and method == "PATCH":
+            negocio_id = path.split("/")[2]
+            return publicar_negocio(negocio_id)
 
         return json_response({"error": "Ruta no encontrada"}, 404)
 
@@ -228,6 +232,17 @@ def listar_categorias(negocio_id):
                 "descripcion": r[5], "precio": r[6]
             })
     return json_response(list(categorias.values()))
+
+
+def publicar_negocio(negocio_id):
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE negocios SET publicado = TRUE WHERE id = %s", (negocio_id,))
+        conn.commit()
+    finally:
+        conn.close()
+    return json_response({"ok": True})
 
 
 def crear_producto(request, categoria_id):
