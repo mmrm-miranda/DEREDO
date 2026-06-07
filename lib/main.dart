@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'config/env.dart';
 import 'config/gemini_service.dart';
 import 'screens/chat_screen.dart';
@@ -11,11 +12,19 @@ import 'screens/home/models/feature_item.dart';
 import 'screens/register_business/register_business_screen.dart';
 import 'package:geolocator/geolocator.dart';
 import 'core/providers/auth_provider.dart';
+import 'screens/recommendations/recommendations_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: '.env');
+
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint("Error inicializando Firebase: $e");
+    debugPrint("Asegúrate de tener google-services.json o ejecutar flutterfire configure.");
+  }
 
   await GeminiService().init();
 
@@ -59,6 +68,7 @@ class DeredoApp extends ConsumerWidget {
               FeatureItem(title: 'Gastronomía', description: 'Restaurantes y comida local'),
               FeatureItem(title: 'Servicios', description: 'Encuentra lo que necesitas'),
               FeatureItem(title: 'Turismo', description: 'Lugares históricos y paseos'),
+              FeatureItem(title: 'Recomendaciones', description: 'Negocios cerca de ti', icon: Icons.explore),
               FeatureItem(title: 'Compras', description: 'Tiendas, mercados y más'),
             ],
             onExplore: () {
@@ -68,12 +78,8 @@ class DeredoApp extends ConsumerWidget {
               final isLoggedIn = ref.read(authProvider);
               if (isLoggedIn) {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterBusinessScreen(
+                  usuarioId: '1', // Temporal o desde authProvider
                   businessTypes: const ['Restaurante/Comida', 'Tienda', 'Servicios', 'Artesanías', 'Otro'],
-                  onContinue: ({required name, required type, required address}) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('¡Negocio guardado temporalmente!')),
-                    );
-                  },
                   onVoiceRegister: () {},
                   onChatAssistant: () {},
                 )));
@@ -82,7 +88,103 @@ class DeredoApp extends ConsumerWidget {
               }
             },
             onFeatureTap: (feature) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+              if (feature.title == 'Turismo') {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => Dialog(
+                    backgroundColor: const Color(0xFFF5F0EB),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFB84A1A).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.explore_outlined, color: Color(0xFFB84A1A), size: 36),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            '¿Qué tipo de turismo buscas?',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Elige una opción para descubrir experiencias increíbles.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 14, color: Colors.black54),
+                          ),
+                          const SizedBox(height: 28),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+                              },
+                              icon: const Icon(Icons.museum_outlined),
+                              label: const Text('Lugar histórico', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF4A7C6F),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+                              },
+                              icon: const Icon(Icons.nature_people_outlined),
+                              label: const Text('Naturaleza', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFB84A1A),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+                              },
+                              icon: const Icon(Icons.directions_walk_outlined),
+                              label: const Text('Paseo', style: TextStyle(fontSize: 16)),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFB84A1A),
+                                side: const BorderSide(color: Color(0xFFB84A1A), width: 1.5),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              } else if (feature.title == 'Recomendaciones') {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const RecommendationsScreen()));
+              } else {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+              }
             },
           );
         }

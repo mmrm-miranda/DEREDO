@@ -100,7 +100,7 @@ class HomeHeader extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           const Text(
-            '¿Te reborujaste vete por deredo?',
+            '¿Te reborujaste? Vete por deredo',
             style: TextStyle(color: Colors.white70, fontSize: 14),
           ),
         ],

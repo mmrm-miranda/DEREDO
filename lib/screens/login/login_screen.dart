@@ -6,6 +6,7 @@ import '../home/home_screen.dart';
 import '../home/models/feature_item.dart';
 import '../register/register_screen.dart';
 import '../register_business/register_business_screen.dart';
+import '../recommendations/recommendations_screen.dart';
 import '../chat_screen.dart';
 import '../map_screen.dart';
 import 'widgets/login_header.dart';
@@ -61,6 +62,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             FeatureItem(title: 'Mapa local', description: 'Negocios cerca de ti por categoría'),
             FeatureItem(title: 'Rutas de barrio', description: 'Recorre zonas comerciales únicas'),
             FeatureItem(title: 'Asistente IA', description: 'Chat con Gemini sobre Durango'),
+            FeatureItem(title: 'Recomendaciones', description: 'Negocios cerca de ti', icon: Icons.explore),
             FeatureItem(title: 'Productos locales', description: 'Artesanías, mezcal, antojitos'),
           ],
           onExplore: () => Navigator.push(
@@ -68,7 +70,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             MaterialPageRoute(builder: (_) => const MapScreen()),
           ),
           onFeatureTap: (item) {
-            if (item.title == 'Mapa local' || item.title == 'Rutas de barrio' || item.title == 'Productos locales') {
+            if (item.title == 'Recomendaciones') {
+              Navigator.push(ctx, MaterialPageRoute(builder: (_) => const RecommendationsScreen()));
+            } else if (item.title == 'Mapa local' || item.title == 'Rutas de barrio' || item.title == 'Productos locales') {
               Navigator.push(ctx, MaterialPageRoute(builder: (_) => const MapScreen()));
             } else {
               Navigator.push(ctx, MaterialPageRoute(builder: (_) => const ChatScreen()));
