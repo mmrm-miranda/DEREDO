@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/gemini_service.dart';
+import '../../main.dart'; // Para importar MapScreen
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -229,12 +230,37 @@ class _ChatScreenState extends State<ChatScreen> {
             BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6, offset: const Offset(0, 2)),
           ],
         ),
-        child: Text(
-          msg.text,
-          style: TextStyle(
-            color: msg.isUser ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
-            fontSize: 14,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              msg.text,
+              style: TextStyle(
+                color: msg.isUser ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+                fontSize: 14,
+              ),
+            ),
+            if (!msg.isUser) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+                  },
+                  icon: const Icon(Icons.map_outlined, size: 18),
+                  label: const Text('Ver ruta en el mapa', style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFB84A1A),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

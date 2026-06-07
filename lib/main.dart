@@ -13,6 +13,10 @@ import 'screens/register_business/register_business_screen.dart';
 import 'package:geolocator/geolocator.dart';
 import 'core/providers/auth_provider.dart';
 import 'screens/recommendations/recommendations_screen.dart';
+import 'screens/register_business/business_assistant_chat_screen.dart';
+import 'services/google_cloud_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,7 +84,9 @@ class DeredoApp extends ConsumerWidget {
                   usuarioId: '1', // Temporal o desde authProvider
                   businessTypes: const ['Restaurante/Comida', 'Tienda', 'Servicios', 'Artesanías', 'Otro'],
                   onVoiceRegister: () {},
-                  onChatAssistant: () {},
+                  onChatAssistant: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const BusinessAssistantChatScreen(usuarioId: '1')));
+                  },
                 )));
               } else {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
@@ -203,56 +209,112 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   final LatLng _center = const LatLng(24.0277, -104.6532); // Durango coordinates from architecture
   final Set<Marker> _markers = {};
   bool _myLocationEnabled = false;
+  StreamSubscription? _businessSub;
 
   @override
   void initState() {
     super.initState();
-    _markers.add(
-      const Marker(
-        markerId: MarkerId('mock_1'),
-        position: LatLng(24.0280, -104.6530),
-        infoWindow: InfoWindow(title: 'Gorditas Doña Mary', snippet: 'Antojitos Duranguenses'),
-      ),
-    );
-    _markers.add(
-      const Marker(
-        markerId: MarkerId('mock_2'),
-        position: LatLng(24.0265, -104.6545),
-        infoWindow: InfoWindow(title: 'Tacos El Paisa', snippet: 'Taquería'),
-      ),
-    );
     _determinePosition();
+    _listenToBusinesses();
   }
 
-  Future<void> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  void _listenToBusinesses() {
+    // 1. Agregar marcadores simulados SIEMPRE, sin depender de Firebase
+    final dummyMarkers = <Marker>{
+      const Marker(
+        markerId: MarkerId('sim_1'),
+        position: LatLng(24.0280, -104.6530),
+        infoWindow: InfoWindow(title: 'Café de Olla Durango', snippet: 'Restaurante/Comida'),
+      ),
+      const Marker(
+        markerId: MarkerId('sim_2'),
+        position: LatLng(24.0265, -104.6545),
+        infoWindow: InfoWindow(title: 'Artesanías El Alacrán', snippet: 'Artesanías'),
+      ),
+      const Marker(
+        markerId: MarkerId('sim_3'),
+        position: LatLng(24.0290, -104.6520),
+        infoWindow: InfoWindow(title: 'Gorditas Doña Ale', snippet: 'Restaurante/Comida'),
+      ),
+    };
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
-    }
-    if (permission == LocationPermission.deniedForever) return;
-
-    Position position = await Geolocator.getCurrentPosition();
-    
     if (mounted) {
       setState(() {
-        _myLocationEnabled = true;
+        _markers.addAll(dummyMarkers);
       });
     }
 
-    if (mapController != null) {
-      mapController!.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(position.latitude, position.longitude),
-          zoom: 15.0,
-        )
-      ));
+    // 2. Intentar escuchar Firebase (envuelto en try-catch por si falla o no está configurado)
+    try {
+      _businessSub = FirebaseFirestore.instance.collection('businesses').snapshots().listen((snapshot) {
+        final newMarkers = <Marker>{};
+        newMarkers.addAll(dummyMarkers);
+
+        for (var doc in snapshot.docs) {
+          final data = doc.data();
+          if (data['location'] != null && data['location'] is GeoPoint) {
+            final loc = data['location'] as GeoPoint;
+            newMarkers.add(Marker(
+              markerId: MarkerId(doc.id),
+              position: LatLng(loc.latitude, loc.longitude),
+              infoWindow: InfoWindow(
+                title: data['name'] ?? 'Negocio',
+                snippet: data['category_id'] ?? 'Local',
+              ),
+            ));
+          }
+        }
+        if (mounted) {
+          setState(() {
+            _markers.clear();
+            _markers.addAll(newMarkers);
+          });
+        }
+      });
+    } catch (e) {
+      debugPrint("Firebase error ignorado para forzar que se vea el mapa: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    _businessSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _determinePosition() async {
+    try {
+      bool serviceEnabled;
+      LocationPermission permission;
+
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      if (permission == LocationPermission.deniedForever) return;
+
+      Position position = await Geolocator.getCurrentPosition();
+      
+      if (mounted) {
+        setState(() {
+          _myLocationEnabled = true;
+        });
+      }
+
+      if (mapController != null) {
+        mapController!.animateCamera(CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: 15.0,
+          )
+        ));
+      }
+    } catch (e) {
+      debugPrint("Geolocator error in MapScreen: $e");
     }
   }
 

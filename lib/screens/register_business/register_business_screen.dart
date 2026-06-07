@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../services/api_service.dart';
+import '../../services/google_cloud_service.dart';
 import '../products/products_screen.dart';
 import '../products/models/product_model.dart';
 import 'widgets/register_business_header.dart';
 import 'widgets/voice_or_chat_card.dart';
 import 'widgets/business_form.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class RegisterBusinessScreen extends StatefulWidget {
   final String usuarioId;
@@ -29,6 +31,8 @@ class _RegisterBusinessScreenState extends State<RegisterBusinessScreen> {
   final _addressController = TextEditingController();
   String? _selectedType;
   bool _loading = false;
+  double? _lat;
+  double? _lng;
 
   @override
   void initState() {
@@ -45,6 +49,45 @@ class _RegisterBusinessScreenState extends State<RegisterBusinessScreen> {
     super.dispose();
   }
 
+  Future<void> _getLocationAddress() async {
+    setState(() => _loading = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) throw Exception('Los servicios de ubicación están desactivados.');
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) throw Exception('Permisos de ubicación denegados.');
+      }
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Permisos de ubicación denegados permanentemente.');
+      }
+
+      Position position = await Geolocator.getCurrentPosition();
+      _lat = position.latitude;
+      _lng = position.longitude;
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        String address = '${place.street ?? ''}, ${place.subLocality ?? place.locality ?? ''}';
+        address = address.replaceAll(RegExp(r'^,\s*'), '').trim();
+        setState(() {
+          _addressController.text = address;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red[700]),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   Future<void> _handleContinue() async {
     final nombre = _nameController.text.trim();
     final direccion = _addressController.text.trim();
@@ -56,11 +99,21 @@ class _RegisterBusinessScreenState extends State<RegisterBusinessScreen> {
     }
     setState(() => _loading = true);
     try {
-      final data = await ApiService().crearNegocio(
+      if (_lat == null || _lng == null) {
+        try {
+          Position pos = await Geolocator.getCurrentPosition();
+          _lat = pos.latitude;
+          _lng = pos.longitude;
+        } catch (_) {}
+      }
+
+      final data = await GoogleCloudService().crearNegocio(
         usuarioId: widget.usuarioId,
         nombre: nombre,
         tipo: _selectedType ?? '',
         direccion: direccion,
+        lat: _lat,
+        lng: _lng,
       );
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -125,6 +178,7 @@ class _RegisterBusinessScreenState extends State<RegisterBusinessScreen> {
                     selectedType: _selectedType,
                     businessTypes: widget.businessTypes,
                     onTypeChanged: (v) => setState(() => _selectedType = v),
+                    onGetLocation: _getLocationAddress,
                   ),
                   const SizedBox(height: 24),
                 ],

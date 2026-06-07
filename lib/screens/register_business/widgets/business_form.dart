@@ -6,6 +6,7 @@ class BusinessForm extends StatelessWidget {
   final String? selectedType;
   final List<String> businessTypes;
   final ValueChanged<String?> onTypeChanged;
+  final VoidCallback? onGetLocation;
 
   const BusinessForm({
     super.key,
@@ -14,6 +15,7 @@ class BusinessForm extends StatelessWidget {
     required this.selectedType,
     required this.businessTypes,
     required this.onTypeChanged,
+    this.onGetLocation,
   });
 
   @override
@@ -25,7 +27,7 @@ class BusinessForm extends StatelessWidget {
         children: [
           const Text(
             'Nombre del comercio',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -36,7 +38,7 @@ class BusinessForm extends StatelessWidget {
           const SizedBox(height: 18),
           const Text(
             'Tipo de comercio',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
@@ -53,21 +55,24 @@ class BusinessForm extends StatelessWidget {
           const SizedBox(height: 18),
           const Text(
             'Dirección',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: addressController,
             style: const TextStyle(color: Colors.black),
             decoration: _inputDecoration('Calle, número, colonia').copyWith(
-              suffixIcon: Container(
-                margin: const EdgeInsets.all(8),
-                width: 32,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2196A6),
-                  borderRadius: BorderRadius.circular(8),
+              suffixIcon: GestureDetector(
+                onTap: onGetLocation,
+                child: Container(
+                  margin: const EdgeInsets.all(8),
+                  width: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2196A6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.my_location, color: Colors.white, size: 18),
                 ),
-                child: const Icon(Icons.my_location, color: Colors.white, size: 18),
               ),
             ),
           ),
