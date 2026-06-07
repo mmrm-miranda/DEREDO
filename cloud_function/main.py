@@ -68,15 +68,22 @@ def registro(request):
     data = request.get_json()
     correo = data.get("correo")
     password = data.get("password")
+    nombre = data.get("nombre", "")
     if not correo or not password:
         return json_response({"error": "Correo y contraseña requeridos"}, 400)
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     with get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO usuarios (correo, password_hash) VALUES (%s, %s) RETURNING id",
-                (correo, password_hash)
-            )
+            try:
+                cur.execute(
+                    "INSERT INTO usuarios (correo, password_hash, nombre) VALUES (%s, %s, %s) RETURNING id",
+                    (correo, password_hash, nombre)
+                )
+            except Exception:
+                cur.execute(
+                    "INSERT INTO usuarios (correo, password_hash) VALUES (%s, %s) RETURNING id",
+                    (correo, password_hash)
+                )
             user_id = cur.fetchone()[0]
         conn.commit()
     return json_response({"id": str(user_id), "correo": correo})

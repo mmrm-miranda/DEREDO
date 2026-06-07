@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../home/home_screen.dart';
 import '../home/models/feature_item.dart';
+import '../register/register_screen.dart';
 import '../register_business/register_business_screen.dart';
 import 'widgets/login_header.dart';
 import 'widgets/login_form.dart';
@@ -37,9 +38,9 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final data = await ApiService().login(correo: correo, password: password);
       if (!mounted) return;
-      _goHome(data['id']);
+      _goHome(data['id'] as String);
     } catch (e) {
-      _showError(e.toString().replaceAll('Exception: ', ''));
+      if (mounted) _showError(e.toString().replaceAll('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -58,28 +59,26 @@ class _LoginScreenState extends State<LoginScreen> {
             FeatureItem(title: 'Productos locales', description: 'Artesanías, mezcal, antojitos'),
           ],
           onExplore: () {},
-          onRegisterBusiness: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => RegisterBusinessScreen(
-                  usuarioId: userId,
-                  businessTypes: const [
-                    'Antojitos duranguenses',
-                    'Taquería',
-                    'Bebidas',
-                    'Artesanías',
-                    'Abarrotes',
-                    'Panadería',
-                    'Otro',
-                  ],
-                  onVoiceRegister: () {},
-                  onChatAssistant: () {},
-                ),
-              ),
-            );
-          },
           onFeatureTap: (_) {},
+          onRegisterBusiness: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RegisterBusinessScreen(
+                usuarioId: userId,
+                businessTypes: const [
+                  'Antojitos duranguenses',
+                  'Taquería',
+                  'Bebidas',
+                  'Artesanías',
+                  'Abarrotes',
+                  'Panadería',
+                  'Otro',
+                ],
+                onVoiceRegister: () {},
+                onChatAssistant: () {},
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -106,7 +105,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 passwordController: _passwordController,
                 onLogin: _loading ? () {} : _handleLogin,
                 onForgotPassword: () {},
-                onRegister: () {},
+                onRegister: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                ),
               ),
               if (_loading)
                 const Padding(

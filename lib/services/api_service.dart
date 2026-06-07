@@ -12,11 +12,12 @@ class ApiService {
   Future<Map<String, dynamic>> registro({
     required String correo,
     required String password,
+    String nombre = '',
   }) async {
     final res = await http.post(
       Uri.parse('$_base/registro'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'correo': correo, 'password': password}),
+      body: jsonEncode({'correo': correo, 'password': password, 'nombre': nombre}),
     );
     return _parse(res);
   }
