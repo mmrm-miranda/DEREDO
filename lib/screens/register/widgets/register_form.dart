@@ -63,6 +63,7 @@ class _RegisterFormState extends State<RegisterForm> {
             controller: widget.nameController,
             keyboardType: TextInputType.name,
             textCapitalization: TextCapitalization.words,
+            style: const TextStyle(color: Colors.black),
             decoration:
                 _inputDecoration('Ej. María Guadalupe Torres'),
           ),
@@ -75,6 +76,7 @@ class _RegisterFormState extends State<RegisterForm> {
           TextField(
             controller: widget.emailController,
             keyboardType: TextInputType.emailAddress,
+            style: const TextStyle(color: Colors.black),
             decoration: _inputDecoration('tucorreo@ejemplo.com'),
           ),
           const SizedBox(height: 20),
@@ -86,6 +88,7 @@ class _RegisterFormState extends State<RegisterForm> {
           TextField(
             controller: widget.passwordController,
             obscureText: _obscurePassword,
+            style: const TextStyle(color: Colors.black),
             decoration: _inputDecoration('Mínimo 6 caracteres').copyWith(
               suffixIcon: IconButton(
                 icon: Icon(
@@ -106,6 +109,7 @@ class _RegisterFormState extends State<RegisterForm> {
           TextField(
             controller: widget.confirmPasswordController,
             obscureText: _obscureConfirm,
+            style: const TextStyle(color: Colors.black),
             decoration: _inputDecoration('Repite tu contraseña').copyWith(
               suffixIcon: IconButton(
                 icon: Icon(

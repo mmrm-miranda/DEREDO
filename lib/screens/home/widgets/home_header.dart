@@ -28,7 +28,75 @@ class HomeHeader extends StatelessWidget {
                       if (!isLoggedIn) {
                         Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
                       } else {
-                        ref.read(authProvider.notifier).logout();
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => Dialog(
+                            backgroundColor: const Color(0xFFF5F0EB),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFB84A1A).withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.logout_rounded, color: Color(0xFFB84A1A), size: 36),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  const Text(
+                                    'Cerrar sesión',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    '¿Estás seguro que deseas salir de tu cuenta?',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 14, color: Colors.black54),
+                                  ),
+                                  const SizedBox(height: 28),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => Navigator.pop(ctx),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.black54,
+                                            side: const BorderSide(color: Colors.black26),
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                          ),
+                                          child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.w600)),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            ref.read(authProvider.notifier).logout();
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFFB84A1A),
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                          ),
+                                          child: const Text('Salir', style: TextStyle(fontWeight: FontWeight.w600)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
                       }
                     },
                     child: Container(

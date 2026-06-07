@@ -38,6 +38,7 @@ class _LoginFormState extends State<LoginForm> {
           TextField(
             controller: widget.emailController,
             keyboardType: TextInputType.emailAddress,
+            style: const TextStyle(color: Colors.black),
             decoration: InputDecoration(
               hintText: 'tucorreo@ejemplo.com',
               hintStyle: const TextStyle(color: Colors.black38),
@@ -68,6 +69,7 @@ class _LoginFormState extends State<LoginForm> {
           TextField(
             controller: widget.passwordController,
             obscureText: _obscurePassword,
+            style: const TextStyle(color: Colors.black),
             decoration: InputDecoration(
               hintText: 'Tu contraseña',
               hintStyle: const TextStyle(color: Colors.black38),

@@ -53,59 +53,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _goHome(String userId) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (ctx) => HomeScreen(
-          location: 'Durango, Dgo.',
-          features: const [
-            FeatureItem(title: 'Mapa local', description: 'Negocios cerca de ti por categoría'),
-            FeatureItem(title: 'Rutas de barrio', description: 'Recorre zonas comerciales únicas'),
-            FeatureItem(title: 'Asistente IA', description: 'Chat con Gemini sobre Durango'),
-            FeatureItem(title: 'Recomendaciones', description: 'Negocios cerca de ti', icon: Icons.explore),
-            FeatureItem(title: 'Productos locales', description: 'Artesanías, mezcal, antojitos'),
-          ],
-          onExplore: () => Navigator.push(
-            ctx,
-            MaterialPageRoute(builder: (_) => const MapScreen()),
-          ),
-          onFeatureTap: (item) {
-            if (item.title == 'Recomendaciones') {
-              Navigator.push(ctx, MaterialPageRoute(builder: (_) => const RecommendationsScreen()));
-            } else if (item.title == 'Mapa local' || item.title == 'Rutas de barrio' || item.title == 'Productos locales') {
-              Navigator.push(ctx, MaterialPageRoute(builder: (_) => const MapScreen()));
-            } else {
-              Navigator.push(ctx, MaterialPageRoute(builder: (_) => const ChatScreen()));
-            }
-          },
-          onRegisterBusiness: () => Navigator.push(
-            ctx,
-            MaterialPageRoute(
-              builder: (ctx2) => RegisterBusinessScreen(
-                usuarioId: userId,
-                businessTypes: const [
-                  'Antojitos duranguenses',
-                  'Taquería',
-                  'Bebidas',
-                  'Artesanías',
-                  'Abarrotes',
-                  'Panadería',
-                  'Otro',
-                ],
-                onVoiceRegister: () => Navigator.push(
-                  ctx2,
-                  MaterialPageRoute(builder: (_) => const ChatScreen()),
-                ),
-                onChatAssistant: () => Navigator.push(
-                  ctx2,
-                  MaterialPageRoute(builder: (_) => const ChatScreen()),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   void _showError(String msg) {

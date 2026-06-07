@@ -30,6 +30,7 @@ class BusinessForm extends StatelessWidget {
           const SizedBox(height: 8),
           TextField(
             controller: nameController,
+            style: const TextStyle(color: Colors.black),
             decoration: _inputDecoration('Ej. Tortillería La Güera'),
           ),
           const SizedBox(height: 18),
@@ -57,6 +58,7 @@ class BusinessForm extends StatelessWidget {
           const SizedBox(height: 8),
           TextField(
             controller: addressController,
+            style: const TextStyle(color: Colors.black),
             decoration: _inputDecoration('Calle, número, colonia').copyWith(
               suffixIcon: Container(
                 margin: const EdgeInsets.all(8),
