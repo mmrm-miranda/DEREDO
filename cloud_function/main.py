@@ -58,10 +58,60 @@ def api(request):
             categoria_id = path.split("/")[2]
             return crear_producto(request, categoria_id)
 
+        if path == "/setup" and method == "POST":
+            return setup_db(request)
+
         return json_response({"error": "Ruta no encontrada"}, 404)
 
     except Exception as e:
         return json_response({"error": str(e)}, 500)
+
+
+def setup_db(request):
+    schema = """
+    CREATE TABLE IF NOT EXISTS usuarios (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      correo TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      nombre TEXT DEFAULT '',
+      creado_en TIMESTAMP DEFAULT NOW()
+    );
+    ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nombre TEXT DEFAULT '';
+    CREATE TABLE IF NOT EXISTS negocios (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+      nombre TEXT NOT NULL,
+      tipo TEXT NOT NULL,
+      direccion TEXT NOT NULL,
+      lat DOUBLE PRECISION,
+      lng DOUBLE PRECISION,
+      publicado BOOLEAN DEFAULT FALSE,
+      creado_en TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS categorias (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      negocio_id UUID REFERENCES negocios(id) ON DELETE CASCADE,
+      nombre TEXT NOT NULL,
+      orden INT DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS productos (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      categoria_id UUID REFERENCES categorias(id) ON DELETE CASCADE,
+      emoji TEXT,
+      nombre TEXT NOT NULL,
+      descripcion TEXT,
+      precio TEXT NOT NULL,
+      creado_en TIMESTAMP DEFAULT NOW()
+    );
+    """
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(schema)
+        conn.commit()
+    finally:
+        conn.close()
+    return json_response({"ok": True, "message": "Tablas creadas"})
 
 
 def registro(request):
@@ -72,20 +122,30 @@ def registro(request):
     if not correo or not password:
         return json_response({"error": "Correo y contraseña requeridos"}, 400)
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-    with get_conn() as conn:
+    conn = get_conn()
+    try:
         with conn.cursor() as cur:
-            try:
+            cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='usuarios' AND column_name='nombre'")
+            has_nombre = cur.fetchone() is not None
+            if has_nombre:
                 cur.execute(
                     "INSERT INTO usuarios (correo, password_hash, nombre) VALUES (%s, %s, %s) RETURNING id",
                     (correo, password_hash, nombre)
                 )
-            except Exception:
+            else:
                 cur.execute(
                     "INSERT INTO usuarios (correo, password_hash) VALUES (%s, %s) RETURNING id",
                     (correo, password_hash)
                 )
             user_id = cur.fetchone()[0]
         conn.commit()
+    except Exception as e:
+        conn.rollback()
+        if "duplicate key" in str(e) or "unique" in str(e).lower():
+            return json_response({"error": "El correo ya está registrado"}, 409)
+        raise
+    finally:
+        conn.close()
     return json_response({"id": str(user_id), "correo": correo})
 
 
