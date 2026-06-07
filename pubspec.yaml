@@ -37,4 +37,5 @@ flutter:
 
   assets:
     - .env
+    - assets/deredo.png
     - gen-lang-client-0483127667-1062ab4ca253.json
