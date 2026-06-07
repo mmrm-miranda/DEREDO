@@ -6,6 +6,11 @@ import 'config/env.dart';
 import 'config/gemini_service.dart';
 import 'screens/chat_screen.dart';
 import 'screens/login/login_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/home/models/feature_item.dart';
+import 'screens/register_business/register_business_screen.dart';
+import 'package:geolocator/geolocator.dart';
+import 'core/providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,11 +29,11 @@ void main() async {
   );
 }
 
-class DeredoApp extends StatelessWidget {
+class DeredoApp extends ConsumerWidget {
   const DeredoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'DEREDO',
@@ -46,7 +51,42 @@ class DeredoApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const LoginScreen(),
+      home: Builder(
+        builder: (context) {
+          return HomeScreen(
+            location: 'Durango, Dgo.',
+            features: const [
+              FeatureItem(title: 'Gastronomía', description: 'Restaurantes y comida local'),
+              FeatureItem(title: 'Servicios', description: 'Encuentra lo que necesitas'),
+              FeatureItem(title: 'Turismo', description: 'Lugares históricos y paseos'),
+              FeatureItem(title: 'Compras', description: 'Tiendas, mercados y más'),
+            ],
+            onExplore: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+            },
+            onRegisterBusiness: () {
+              final isLoggedIn = ref.read(authProvider);
+              if (isLoggedIn) {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterBusinessScreen(
+                  businessTypes: const ['Restaurante/Comida', 'Tienda', 'Servicios', 'Artesanías', 'Otro'],
+                  onContinue: ({required name, required type, required address}) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('¡Negocio guardado temporalmente!')),
+                    );
+                  },
+                  onVoiceRegister: () {},
+                  onChatAssistant: () {},
+                )));
+              } else {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+              }
+            },
+            onFeatureTap: (feature) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+            },
+          );
+        }
+      ),
     );
   }
 }
@@ -63,6 +103,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   final LatLng _center = const LatLng(24.0277, -104.6532); // Durango coordinates from architecture
   final Set<Marker> _markers = {};
+  bool _myLocationEnabled = false;
 
   @override
   void initState() {
@@ -81,6 +122,39 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         infoWindow: InfoWindow(title: 'Tacos El Paisa', snippet: 'Taquería'),
       ),
     );
+    _determinePosition();
+  }
+
+  Future<void> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+    if (permission == LocationPermission.deniedForever) return;
+
+    Position position = await Geolocator.getCurrentPosition();
+    
+    if (mounted) {
+      setState(() {
+        _myLocationEnabled = true;
+      });
+    }
+
+    if (mapController != null) {
+      mapController!.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(position.latitude, position.longitude),
+          zoom: 15.0,
+        )
+      ));
+    }
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -99,8 +173,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               zoom: 14.0,
             ),
             markers: _markers,
-            myLocationEnabled: false, // Set to false until runtime permissions are requested
-            myLocationButtonEnabled: false,
+            myLocationEnabled: _myLocationEnabled,
+            myLocationButtonEnabled: _myLocationEnabled,
             zoomControlsEnabled: false,
           ),
           // Top Search Bar Mock
@@ -108,27 +182,67 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             top: 50,
             left: 20,
             right: 20,
-            child: Container(
-              height: 50,
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ],
-              ),
-              child: const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Buscar negocios locales...',
-                  prefixIcon: Icon(Icons.search),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 15),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: const TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Buscar negocios locales...',
+                        prefixIcon: Icon(Icons.search),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 15),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final isLoggedIn = ref.watch(authProvider);
+                    return GestureDetector(
+                      onTap: () {
+                        if (!isLoggedIn) {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                        } else {
+                          // Cerrar sesión
+                          ref.read(authProvider.notifier).logout();
+                        }
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        child: isLoggedIn
+                            ? ClipOval(child: Image.asset('assets/deredo.png', fit: BoxFit.cover, errorBuilder: (_,__,___)=>const Icon(Icons.person_outline)))
+                            : const Icon(Icons.person_outline, color: Colors.black54),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ],

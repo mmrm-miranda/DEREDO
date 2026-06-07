@@ -14,18 +14,38 @@ class RegisterBusinessHeader extends StatelessWidget {
         children: [
           Row(
             children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 16),
               Container(
-                width: 36,
-                height: 36,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(6),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.asset(
+                    'assets/deredo.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const SizedBox(),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               const Text(
-                'Comercio Vivo Durango',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+                'DEREDO',
+                style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),

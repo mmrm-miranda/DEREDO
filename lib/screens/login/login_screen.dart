@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/providers/auth_provider.dart';
 import '../../services/api_service.dart';
 import '../home/home_screen.dart';
 import '../home/models/feature_item.dart';
@@ -10,14 +12,14 @@ import 'widgets/login_header.dart';
 import 'widgets/login_form.dart';
 import 'widgets/voice_login_button.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
@@ -40,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final data = await ApiService().login(correo: correo, password: password);
       if (!mounted) return;
+      await ref.read(authProvider.notifier).login();
       _goHome(data['id'] as String);
     } catch (e) {
       if (mounted) _showError(e.toString().replaceAll('Exception: ', ''));

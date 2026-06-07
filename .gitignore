@@ -51,8 +51,12 @@ app.*.map.json
 .env
 .env.*
 *.json.credentials
+<<<<<<< Updated upstream
 gen-lang-client-*.json
 
 # Database setup files
 schema.sql
 setup_db.bat
+=======
+gen-lang-client-*.json
+>>>>>>> Stashed changes

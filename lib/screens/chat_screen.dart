@@ -13,6 +13,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<_ChatMessage> _messages = [];
   bool _isLoading = false;
+  int _emptyStateStep = 1;
+  String _selectedPersona = '';
 
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
@@ -70,7 +72,7 @@ class _ChatScreenState extends State<ChatScreen> {
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Asistente DEREDO', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                Text('DEREDITO', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 Text('Powered by Gemini', style: TextStyle(fontSize: 11, color: Colors.grey)),
               ],
             ),
@@ -101,20 +103,109 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildEmptyState(Color color) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.smart_toy_outlined, size: 64, color: color.withOpacity(0.4)),
-          const SizedBox(height: 16),
-          const Text('¿En qué te puedo ayudar?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          Text(
-            'Pregúntame sobre negocios,\nlugares o la ciudad de Durango.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[600], fontSize: 13),
-          ),
-        ],
+    if (_emptyStateStep == 1) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.smart_toy_outlined, size: 64, color: color.withOpacity(0.4)),
+            const SizedBox(height: 16),
+            const Text('Para darte mejores respuestas...', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            Text(
+              '¿Eres residente local o estás de visita?',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _selectedPersona = 'residente local en';
+                      _emptyStateStep = 2;
+                    });
+                  },
+                  icon: const Icon(Icons.home_rounded),
+                  label: const Text('Soy Local'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _selectedPersona = 'turista visitando';
+                      _emptyStateStep = 2;
+                    });
+                  },
+                  icon: const Icon(Icons.flight_takeoff_rounded),
+                  label: const Text('Soy Turista'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color.withOpacity(0.1),
+                    foregroundColor: color,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.explore_outlined, size: 64, color: color.withOpacity(0.4)),
+            const SizedBox(height: 16),
+            Text('Genial, $_selectedPersona.', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            Text(
+              '¿Qué te gustaría hacer hoy en Durango?',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.center,
+              children: [
+                _buildActivityButton(color, Icons.restaurant, 'Comer rico', 'salir a comer a un buen lugar'),
+                _buildActivityButton(color, Icons.museum, 'Explorar', 'conocer lugares turísticos y culturales'),
+                _buildActivityButton(color, Icons.shopping_bag, 'Ir de compras', 'ir de compras por la ciudad'),
+                _buildActivityButton(color, Icons.local_activity, 'Entretenimiento', 'buscar actividades de entretenimiento'),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildActivityButton(Color color, IconData icon, String label, String action) {
+    return ElevatedButton.icon(
+      onPressed: () {
+        _controller.text = 'Hola, soy $_selectedPersona Durango. Me gustaría $action. ¿Qué lugares o negocios locales me recomiendas?';
+        _sendMessage();
+      },
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color.withOpacity(0.08),
+        foregroundColor: color,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
