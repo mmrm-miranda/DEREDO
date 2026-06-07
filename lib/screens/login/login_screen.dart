@@ -61,18 +61,18 @@ class _LoginScreenState extends State<LoginScreen> {
             FeatureItem(title: 'Productos locales', description: 'Artesanías, mezcal, antojitos'),
           ],
           onExplore: () => Navigator.push(
-            context,
+            ctx,
             MaterialPageRoute(builder: (_) => const MapScreen()),
           ),
           onFeatureTap: (item) {
             if (item.title == 'Mapa local' || item.title == 'Rutas de barrio' || item.title == 'Productos locales') {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+              Navigator.push(ctx, MaterialPageRoute(builder: (_) => const MapScreen()));
             } else {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatScreen()));
+              Navigator.push(ctx, MaterialPageRoute(builder: (_) => const ChatScreen()));
             }
           },
           onRegisterBusiness: () => Navigator.push(
-            context,
+            ctx,
             MaterialPageRoute(
               builder: (ctx2) => RegisterBusinessScreen(
                 usuarioId: userId,
