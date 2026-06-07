@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
+import '../products/products_screen.dart';
+import '../products/models/product_model.dart';
 import 'widgets/register_business_header.dart';
 import 'widgets/voice_or_chat_card.dart';
 import 'widgets/business_form.dart';
 
 class RegisterBusinessScreen extends StatefulWidget {
+  final String usuarioId;
   final List<String> businessTypes;
-  final void Function({
-    required String name,
-    required String type,
-    required String address,
-  }) onContinue;
   final VoidCallback onVoiceRegister;
   final VoidCallback onChatAssistant;
 
   const RegisterBusinessScreen({
     super.key,
+    required this.usuarioId,
     required this.businessTypes,
-    required this.onContinue,
     required this.onVoiceRegister,
     required this.onChatAssistant,
   });
@@ -29,6 +28,7 @@ class _RegisterBusinessScreenState extends State<RegisterBusinessScreen> {
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   String? _selectedType;
+  bool _loading = false;
 
   @override
   void initState() {
@@ -45,12 +45,46 @@ class _RegisterBusinessScreenState extends State<RegisterBusinessScreen> {
     super.dispose();
   }
 
-  void _handleContinue() {
-    widget.onContinue(
-      name: _nameController.text.trim(),
-      type: _selectedType ?? '',
-      address: _addressController.text.trim(),
-    );
+  Future<void> _handleContinue() async {
+    final nombre = _nameController.text.trim();
+    final direccion = _addressController.text.trim();
+    if (nombre.isEmpty || direccion.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Completa nombre y dirección')),
+      );
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final data = await ApiService().crearNegocio(
+        usuarioId: widget.usuarioId,
+        nombre: nombre,
+        tipo: _selectedType ?? '',
+        direccion: direccion,
+      );
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductsScreen(
+            negocioId: data['id'],
+            businessName: nombre,
+            businessSubtitle: '${_selectedType ?? ''} · $direccion',
+            categories: const [],
+            onAddProduct: () {},
+            onPublish: () {},
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red[700]),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -97,7 +131,7 @@ class _RegisterBusinessScreenState extends State<RegisterBusinessScreen> {
               ),
             ),
           ),
-          _ContinueButton(onPressed: _handleContinue),
+          _ContinueButton(onPressed: _loading ? null : _handleContinue, loading: _loading),
         ],
       ),
     );
@@ -105,9 +139,10 @@ class _RegisterBusinessScreenState extends State<RegisterBusinessScreen> {
 }
 
 class _ContinueButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final bool loading;
 
-  const _ContinueButton({required this.onPressed});
+  const _ContinueButton({required this.onPressed, required this.loading});
 
   @override
   Widget build(BuildContext context) {
@@ -122,15 +157,13 @@ class _ContinueButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFB84A1A),
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
             elevation: 0,
           ),
-          child: const Text(
-            'Continuar — Agregar productos',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+          child: loading
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text('Continuar — Agregar productos',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         ),
       ),
     );
