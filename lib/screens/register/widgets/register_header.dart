@@ -23,7 +23,19 @@ class RegisterHeader extends StatelessWidget {
               child: Image.asset(
                 'assets/deredo.png',
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox(),
+                errorBuilder: (_, __, ___) => Container(
+                  color: Colors.white,
+                  child: const Center(
+                    child: Text(
+                      'D',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF8B3A1A),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
